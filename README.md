@@ -60,6 +60,7 @@ node web-scraper.js
 
 - A search term (e.g. `Restaurants in Lahore`)
 - Whether to run in headless mode (`true` or `false`)
+- Source for the scraping (`linkdln/google`)
 
 ---
 
@@ -68,7 +69,11 @@ node web-scraper.js
 Results are saved to:
 
 ```plaintext
-📄 output.xlsx
+📄 output/google_output.xlsx
+```
+
+```plaintext
+📄 output/linkedin_output.xlsx
 ```
 
 With columns:

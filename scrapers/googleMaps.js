@@ -162,7 +162,7 @@ export async function googleMapsScraper() {
   }
 
   // Save to File
-  await workbook.xlsx.writeFile("output/output.xlsx");
+  await workbook.xlsx.writeFile("output/google_output.xlsx");
   console.log("Data saved to output.xlsx ");
   count = 0;
   await browser.close();
