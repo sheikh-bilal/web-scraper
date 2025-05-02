@@ -1,26 +1,27 @@
 import ExcelJS from "exceljs";
 import puppeteer from "puppeteer";
-import { autoScrollResults, randomDelay } from "../services/utils.js";
+import {
+  autoScrollResults,
+  randomDelay,
+  askQuestion,
+  setConfig,
+} from "../services/utils.js";
 
-export async function googleMapsScraper(isHeadless, searchTerm, count) {
+let count = 0;
+
+export async function googleMapsScraper() {
+  const searchTerm = await askQuestion(
+    "Enter search term (e.g. Doctors in Lahore): "
+  );
+  const headlessInput = await askQuestion("Run in headless mode? (yes/no): ");
+  const isHeadless = headlessInput.trim().toLowerCase() === "yes";
+
   const browser = await puppeteer.launch({ headless: isHeadless });
   const page = await browser.newPage();
 
-  //cache and cookies clear
-  const client = await page._client();
-  await client.send("Network.clearBrowserCookies");
-  await client.send("Network.clearBrowserCache");
-  await client.send("Network.setCacheDisabled", { cacheDisabled: true });
-  page.on("load", async () => {
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
-  });
+  await setConfig(page);
 
-  await page.setViewport({ width: 1280, height: 800 });
-
-  await page.goto("https://maps.google.com", { waitUntil: "domcontentloaded" });
+  await page.goto("https://maps.google.com", { waitUntil: "networkidle2" });
   await randomDelay(2000, 5000);
 
   //if cookies
@@ -41,7 +42,7 @@ export async function googleMapsScraper(isHeadless, searchTerm, count) {
   await Promise.all([
     page.keyboard.press("Enter"),
     page.waitForSelector('a[href*="/place/"]', {
-      timeout: 10000,
+      timeout: 9000,
     }),
   ]);
   await randomDelay(2000, 3000);
@@ -53,7 +54,7 @@ export async function googleMapsScraper(isHeadless, searchTerm, count) {
     const hrefs = anchors.map((a) => a.href.split("?")[0]);
     return Array.from(new Set(hrefs));
   });
-  console.log(`Found ${businessLinks.length} businesses`);
+  console.log(`✔  Found ${businessLinks.length} businesses`);
 
   // Prepare Excel workbook
   const workbook = new ExcelJS.Workbook();
@@ -125,7 +126,6 @@ export async function googleMapsScraper(isHeadless, searchTerm, count) {
 
           await websitePage.close();
         } catch (err) {
-          console.error("Failed to extract socials from website:", err.message);
           data.fb = "N/A";
           data.insta = "N/A";
           data.linkedln = "N/A";
@@ -156,14 +156,14 @@ export async function googleMapsScraper(isHeadless, searchTerm, count) {
 
     sheet.addRow(data);
     count++;
-    console.log(`Scraped ${count}/${businessLinks.length}: ${data.name}`);
+    console.log(`✔  Scraped ${count}/${businessLinks.length}: ${data.name} `);
     await detailPage.close();
     await randomDelay(2000, 3500);
   }
 
   // Save to File
   await workbook.xlsx.writeFile("output/output.xlsx");
-  console.log("Data saved to output.xlsx");
-
+  console.log("Data saved to output.xlsx ");
+  count = 0;
   await browser.close();
 }

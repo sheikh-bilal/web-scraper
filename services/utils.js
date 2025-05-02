@@ -45,5 +45,22 @@ export async function autoScrollResults(page) {
 
     await randomDelay(2000, 3500);
   }
-  console.log("Finished scrolling sidebar");
+  console.log("✔  Finished scrolling sidebar");
+}
+
+export async function setConfig(page) {
+  //cache and cookies clear
+  const client = await page._client();
+  await client.send("Network.clearBrowserCookies");
+  await client.send("Network.clearBrowserCache");
+  await client.send("Network.setCacheDisabled", { cacheDisabled: true });
+  page.on("load", async () => {
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+  });
+
+  //set view port
+  await page.setViewport({ width: 1280, height: 800 });
 }
