@@ -1,10 +1,12 @@
-# 🔍 Google Maps Business Scraper
+# 🔍 Web Scrapers
 
-Automate business data collection from Google Maps using Puppeteer. Quickly scrape names, addresses, contact details, and more — all exported to an Excel file.
+Automate business data collection from **Google Maps** and **LinkedIn** using Puppeteer. Quickly scrape company and business data, including names, addresses, contact details, ratings, and more — all exported to an Excel file.
 
 ---
 
 ## ✨ Features
+
+### Google Maps Scraper
 
 - 🧠 Interactive: Prompt-based input for search term and headless mode
 - 🗺️ Google Maps navigation and search automation
@@ -19,6 +21,17 @@ Automate business data collection from Google Maps using Puppeteer. Quickly scra
   - 🔗 Business URL
 - 🧼 Cleans unwanted icons and formatting
 - 📊 Exports clean data to `output.xlsx`
+
+### LinkedIn Scraper
+
+- 🧠 Login automation for LinkedIn
+- 🔍 Search companies based on query (e.g., "Marketing Agencies")
+- 📥 Extracts:
+  - 🏢 Company Name
+  - 📍 Description
+  - 📈 Number of Followers
+  - 🔗 LinkedIn URL
+- 📊 Exports clean data to `output/linkedin_output.xlsx`
 
 ---
 
@@ -40,7 +53,7 @@ npm install
 Run the script:
 
 ```bash
-node google-maps-scraper.js
+node web-scraper.js
 ```
 
 🔸 You'll be prompted to enter:
