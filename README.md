@@ -68,18 +68,25 @@ node web-scraper.js
 
 Results are saved to:
 
-```plaintext
-📄 output/google_output.xlsx
-```
+### Google Scraper
 
 ```plaintext
-📄 output/linkedin_output.xlsx
+📄 output/google_output.xlsx
 ```
 
 With columns:
 
 | 🏢 Name | 📍 Address | 📞 Phone | 🌐 Website | ⭐ Rating | 🗣️ Reviews | 🔗 URL |
 | ------- | ---------- | -------- | ---------- | --------- | ---------- | ------ |
+
+### LinkedIn Scraper
+
+```plaintext
+📄 output/linkedin_output.xlsx
+```
+
+| 🏢 Company Name | 📍 Description | 📈 Followers | 🔗 URL |
+| --------------- | -------------- | ------------ | ------ |
 
 ---
 
