@@ -1,14 +1,9 @@
-// youtube-scraper.mjs or set "type": "module" in package.json
-
 import youtube from "youtube-sr";
 import puppeteer from "puppeteer";
 import axios from "axios";
 import { exec } from "child_process";
-import minimist from "minimist";
+import { askQuestion } from "../services/utils.js";
 
-const args = minimist(process.argv.slice(2));
-
-// Basic YouTube Search
 async function searchVideos(keyword, limit = 10) {
   const results = await youtube.search(keyword, { limit });
   results.forEach((video) => {
@@ -23,7 +18,7 @@ async function searchVideos(keyword, limit = 10) {
   });
 }
 
-// Trending Scraper
+// Trending videos scraping
 async function scrapeTrending(countryCode = "US") {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
@@ -31,15 +26,26 @@ async function scrapeTrending(countryCode = "US") {
     waitUntil: "networkidle2",
   });
 
-  const videos = await page.evaluate(() => {
-    const titles = Array.from(document.querySelectorAll("h3 a"));
-    return titles.slice(0, 10).map((el) => ({
-      title: el.textContent.trim(),
-      url: "https://www.youtube.com" + el.getAttribute("href"),
-    }));
-  });
+  const videoHandles = await page.$$("h3 a");
+  const maxVideos = Math.min(10, videoHandles.length);
+  console.log(
+    `Scraping top ${maxVideos} trending videos in ${countryCode}...\n`
+  );
 
-  console.log(videos);
+  for (let i = 0; i < maxVideos; i++) {
+    const handle = videoHandles[i];
+
+    const title = await page.evaluate((el) => el.textContent.trim(), handle);
+    const href = await page.evaluate((el) => el.getAttribute("href"), handle);
+    const url = `https://www.youtube.com${href}`;
+
+    console.log(`Scraped ${i + 1}/${maxVideos}:`);
+    console.log(`  Title: ${title}`);
+    console.log(`  URL:   ${url}`);
+    console.log("--------------------------------------------------");
+
+    await new Promise((res) => setTimeout(res, 300));
+  }
   await browser.close();
 }
 
@@ -57,6 +63,10 @@ async function getSuggestions(query) {
 function getVideoMetadata(videoUrl) {
   const command = `yt-dlp -j "${videoUrl}"`;
 
+  console.log("--------------------------------------------------");
+  console.log(`Scraping metaData for ${videoUrl}...`);
+  console.log("--------------------------------------------------");
+
   exec(command, (error, stdout, stderr) => {
     if (error) {
       console.error(`yt-dlp error: ${error.message}`);
@@ -72,7 +82,7 @@ function getVideoMetadata(videoUrl) {
         views: metadata.view_count,
         likes: metadata.like_count,
         upload_date: metadata.upload_date,
-        description: metadata.description?.substring(0, 200),
+        description: metadata.description?.substring(),
         thumbnail: metadata.thumbnail,
         categories: metadata.categories,
         subtitles: metadata.subtitles,
@@ -84,27 +94,44 @@ function getVideoMetadata(videoUrl) {
   });
 }
 
-// CLI Entry Point
-if (args.search) {
-  searchVideos(args.search, args.limit || 10);
-} else if (args.trending) {
-  scrapeTrending(args.trending.toUpperCase());
-} else if (args.suggest) {
-  getSuggestions(args.suggest);
-} else if (args.deepmeta) {
-  getVideoMetadata(args.deepmeta);
-} else {
-  console.log(`
-Usage:
-  --search "keyword"         Search YouTube videos
-  --trending "COUNTRY"       Get trending videos (e.g., US, IN)
-  --suggest "query"          Get YouTube autocomplete suggestions
-  --deepmeta "video_url"     Get advanced metadata using yt-dlp
-
-Examples:
-  node youtube-scraper.mjs --search="vlogging tips"
-  node youtube-scraper.mjs --trending=PK
-  node youtube-scraper.mjs --suggest="desi food"
-  node youtube-scraper.mjs --deepmeta="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-`);
+export async function youtubeScraper() {
+  const action = await askQuestion(
+    `Choose YouTube action (search / trending / suggest / deepmeta): `
+  );
+  switch (action.toLowerCase()) {
+    case "search": {
+      const keyword = await askQuestion("Enter search keyword: ");
+      await searchVideos(keyword, 10);
+      break;
+    }
+    case "trending": {
+      const country = await askQuestion("Enter country code (e.g US): ");
+      await scrapeTrending((country || "US").toUpperCase());
+      break;
+    }
+    case "suggest": {
+      const query = await askQuestion("Enter suggestion query: ");
+      await getSuggestions(query);
+      break;
+    }
+    case "deepmeta": {
+      const url = await askQuestion("YouTube video URL: ");
+      getVideoMetadata(url);
+      break;
+    }
+    default:
+      console.log(`
+        Usage:
+          --search "keyword"         Search YouTube videos
+          --trending "COUNTRY"       Get trending videos (e.g., US, IN)
+          --suggest "query"          Get YouTube autocomplete suggestions
+          --deepmeta "video_url"     Get advanced metadata using yt-dlp
+        
+        Examples:
+          --search="vlogging tips"
+          --trending=PK
+          --suggest="desi food"
+          --deepmeta="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      `);
+  }
 }
