@@ -15,3 +15,8 @@ Thumbs.db
 # Editor settings
 .vscode/
 .idea/
+
+# Ignore all files inside the 'output' folder
+output/*
+# But do track the 'output' folder itself
+!output/

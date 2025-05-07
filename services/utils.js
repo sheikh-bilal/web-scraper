@@ -1,4 +1,6 @@
 import readline from "readline";
+import axios from "axios";
+
 //fucntion for input
 export function askQuestion(query) {
   const rl = readline.createInterface({
@@ -63,4 +65,17 @@ export async function setConfig(page) {
 
   //set view port
   await page.setViewport({ width: 1280, height: 800 });
+}
+
+export function formatDate(dateStr) {
+  return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6)}`;
+}
+
+export async function getSuggestions(query) {
+  const url = `http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=${encodeURIComponent(
+    query
+  )}`;
+  const { data } = await axios.get(url);
+  const suggestions = data[1];
+  console.log(suggestions);
 }

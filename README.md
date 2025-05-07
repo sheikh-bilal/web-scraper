@@ -1,16 +1,18 @@
 # 🔍 Web Scrapers
 
-Automate business data collection from **Google Maps** and **LinkedIn** using Puppeteer. Quickly scrape company and business data, including names, addresses, contact details, ratings, and more — all exported to an Excel file.
+Automate business and media data collection from **Google Maps**, **LinkedIn**, and **YouTube** using Puppeteer and other powerful tools. Extract valuable information like company details, social profiles, and trending or searched video insights — all exported to structured Excel files.
 
 ---
 
 ## ✨ Features
 
-### Google Maps Scraper
+---
+
+### 📍 Google Maps Scraper
 
 - 🧠 Interactive: Prompt-based input for search term and headless mode
-- 🗺️ Google Maps navigation and search automation
-- 📜 Smart scrolling to load all sidebar results
+- 🗺️ Automates Google Maps navigation and result scraping
+- 📜 Smart scrolling to capture full listings
 - 📥 Extracts:
   - 🏢 Business Name
   - 📍 Address
@@ -19,28 +21,77 @@ Automate business data collection from **Google Maps** and **LinkedIn** using Pu
   - ⭐ Rating
   - 🗣️ Number of Reviews
   - 🔗 Business URL
-- 🧼 Cleans unwanted icons and formatting
-- 📊 Exports clean data to `output.xlsx`
+- 📊 Exports clean data to `output/google_output.xlsx`
 
-### LinkedIn Scraper
+---
 
-- 🧠 Login automation for LinkedIn
-- 🔍 Search companies based on query (e.g., "Marketing Agencies")
+### 🔗 LinkedIn Company Scraper
+
+- 🔐 Automates login to LinkedIn
+- 🔍 Searches for companies based on a keyword (e.g., "Marketing Agencies")
 - 📥 Extracts:
   - 🏢 Company Name
   - 📍 Description
   - 📈 Number of Followers
-  - 🔗 LinkedIn URL
-- 📊 Exports clean data to `output/linkedin_output.xlsx`
+  - 🔗 LinkedIn Profile URL
+- 📊 Saves results to `output/linkedin_output.xlsx`
+
+---
+
+### 🎥 YouTube Scraper
+
+#### 1. **Search Videos**
+
+- 🔍 Search YouTube using keywords
+- 📥 Extracts:
+  - 🎬 Title
+  - 🔗 Video URL
+  - 👁️ Views
+  - ⏳ Duration
+  - 📆 Uploaded (relative time)
+  - 📺 Channel Name
+- 📊 Saved to: `output/search-youtube-<timestamp>.xlsx`
+
+#### 2. **Trending Videos**
+
+- 🌍 Scrape regional trending videos (e.g., US, IN)
+- 🔎 Filter by:
+  - All videos
+  - Only Shorts
+  - Only Regular Videos
+- 📥 Metadata Includes:
+  - 🎬 Title
+  - 📺 Uploader
+  - ⏱️ Duration
+  - 👁️ Views
+  - 👍 Likes
+  - 🗓️ Upload Date
+  - 🏷️ Tags
+  - 🗂️ Categories
+  - 🔗 Video URL
+  - 🖼️ Thumbnail URL
+  - 📝 Short Description
+- 📊 Saved to: `output/trending-youtube-<timestamp>.xlsx`
+
+#### 3. **Video Suggestions**
+
+- 💡 Get YouTube autocomplete suggestions for a given query
+- Useful for SEO, keyword research, and content planning
+
+#### 4. **Deep Metadata (Single Video)**
+
+- 🔎 Extract full video metadata using `yt-dlp`
+- Outputs a full object with tags, likes, categories, and more
 
 ---
 
 ## 🔧 Requirements
 
 - [Node.js](https://nodejs.org/) (v14+ recommended)
+- `yt-dlp` (must be installed and available in PATH for YouTube metadata)
 - npm (comes with Node.js)
 
-Install dependencies:
+Install all dependencies:
 
 ```bash
 npm install
@@ -50,56 +101,69 @@ npm install
 
 ## 🚀 Usage
 
-Run the script:
+Run the main scraper interface:
 
 ```bash
 node web-scraper.js
 ```
 
-🔸 You'll be prompted to enter:
+You’ll be prompted to select:
 
-- A search term (e.g. `Restaurants in Lahore`)
-- Whether to run in headless mode (`true` or `false`)
-- Source for the scraping (`linkdln/google`)
+- A search term
+- Whether to run in headless mode
+- The data source:
+  - `google`
+  - `linkdln`
+  - `youtube`
+
+If you choose YouTube, you'll be offered:
+
+- `search` – Search videos by keyword
+- `trending` – Scrape trending videos by country
+- `suggest` – Get autocomplete suggestions
+- `deepmeta` – Fetch advanced video metadata
 
 ---
 
 ## 📁 Output
 
-Results are saved to:
+### 📍 Google Scraper
 
-### Google Scraper
+`📄 output/google_output.xlsx`
 
-```plaintext
-📄 output/google_output.xlsx
-```
+| Name | Address | Phone | Website | Rating | Reviews | URL |
+| ---- | ------- | ----- | ------- | ------ | ------- | --- |
 
-With columns:
+---
 
-| 🏢 Name | 📍 Address | 📞 Phone | 🌐 Website | ⭐ Rating | 🗣️ Reviews | 🔗 URL |
-| ------- | ---------- | -------- | ---------- | --------- | ---------- | ------ |
+### 🔗 LinkedIn Scraper
 
-### LinkedIn Scraper
+`📄 output/linkedin_output.xlsx`
 
-```plaintext
-📄 output/linkedin_output.xlsx
-```
+| Company Name | Description | Followers | URL |
+| ------------ | ----------- | --------- | --- |
 
-| 🏢 Company Name | 📍 Description | 📈 Followers | 🔗 URL |
-| --------------- | -------------- | ------------ | ------ |
+---
+
+### 🎥 YouTube Scraper
+
+`📄 output/search-youtube-*.xlsx`, `trending-youtube-*.xlsx`
+
+| Title | Uploader | Views | Duration | Upload Date | Tags | Categories | URL | Description | Likes | Thumbnail |
+| ----- | -------- | ----- | -------- | ----------- | ---- | ---------- | --- | ----------- | ----- | --------- |
 
 ---
 
 ## ⚠️ Disclaimer
 
-This script is for **educational and research purposes** only. Ensure your usage complies with [Google Maps Terms of Service](https://maps.google.com/help/terms_maps/).
+This project is intended for **educational and research purposes only**. Ensure you comply with the Terms of Service of platforms like:
+
+- [Google Maps](https://maps.google.com/help/terms_maps/)
+- [YouTube](https://www.youtube.com/t/terms)
+- [LinkedIn](https://www.linkedin.com/legal/user-agreement)
 
 ---
 
-## 📄 License
-
-MIT License
-
 ## 👨🏻‍💻 Developer
 
-Bilal Ahmed
+**Bilal Ahmed (reply2bilal.ahmed@gmail.com)**

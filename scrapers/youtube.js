@@ -1,18 +1,13 @@
 import ytSearch from "yt-search";
 import puppeteer from "puppeteer";
-import axios from "axios";
 import ExcelJS from "exceljs";
 import fs from "fs";
 import path from "path";
 import { exec as _exec } from "child_process";
 import { promisify } from "util";
-import { askQuestion } from "../services/utils.js";
+import { askQuestion, formatDate, getSuggestions } from "../services/utils.js";
 
 const exec = promisify(_exec);
-
-function formatDate(dateStr) {
-  return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6)}`;
-}
 
 async function searchVideos(keyword) {
   const result = await ytSearch(keyword);
@@ -23,11 +18,11 @@ async function searchVideos(keyword) {
 
   worksheet.columns = [
     { header: "Title", key: "title", width: 100 },
-    { header: "URL", key: "url", width: 60 },
+    { header: "URL", key: "url", width: 50 },
     { header: "Views", key: "views", width: 15 },
-    { header: "Uploaded", key: "uploaded", width: 15 },
+    { header: "Uploaded", key: "uploaded", width: 30 },
     { header: "Channel", key: "channel", width: 30 },
-    { header: "Duration", key: "duration", width: 10 },
+    { header: "Duration", key: "duration", width: 15 },
   ];
 
   videos.forEach((video, i) => {
@@ -131,16 +126,6 @@ async function scrapeTrending(countryCode = "US", filterType = "all") {
   console.log(`✔  Excel file saved to: ${filePath}`);
 }
 
-// Auto-Suggestions
-async function getSuggestions(query) {
-  const url = `http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=${encodeURIComponent(
-    query
-  )}`;
-  const { data } = await axios.get(url);
-  const suggestions = data[1];
-  console.log(suggestions);
-}
-
 // Deep Metadata using yt-dlp
 async function getVideoMetadata(videoUrl) {
   const command = `yt-dlp -j "${videoUrl}"`;
@@ -169,43 +154,44 @@ async function getVideoMetadata(videoUrl) {
 
 export async function youtubeScraper() {
   const action = await askQuestion(
-    `Choose YouTube action (search / trending / suggest / deepmeta): `
+    `Choose a YouTube action:\n  • search\n  • trending\n  • suggest\n  • deepmeta\n\nYour choice: `
   );
+
   switch (action.toLowerCase()) {
     case "search": {
       const keyword = await askQuestion("Enter search keyword: ");
       await searchVideos(keyword, 10);
       break;
     }
+
     case "trending": {
-      const country = await askQuestion("Enter country code (e.g US): ");
-      const type = await askQuestion("Select type (videos | shorts | all): ");
+      const country = await askQuestion("Enter country code (e.g. US): ");
+      const type = await askQuestion(
+        "🎞️ Select type (videos | shorts | all): "
+      );
       await scrapeTrending((country || "US").toUpperCase(), type.toLowerCase());
       break;
     }
+
     case "suggest": {
       const query = await askQuestion("Enter suggestion query: ");
       await getSuggestions(query);
       break;
     }
+
     case "deepmeta": {
-      const url = await askQuestion("YouTube video URL: ");
+      const url = await askQuestion("🔗 Enter YouTube video URL: ");
       await getVideoMetadata(url);
       break;
     }
+
     default:
       console.log(`
-        Usage:
-          --search "keyword"         Search YouTube videos
-          --trending "COUNTRY"       Get trending videos (e.g., US, IN)
-          --suggest "query"          Get YouTube autocomplete suggestions
-          --deepmeta "video_url"     Get advanced metadata using yt-dlp
-        
-        Examples:
-          --search="vlogging tips"
-          --trending=PK
-          --suggest="desi food"
-          --deepmeta="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-      `);
+❌ Invalid option. Available actions:
+
+  --search           Search YouTube videos
+  --trending         Get trending videos (e.g., US, IN)
+  --suggest          Get YouTube autocomplete suggestions
+  --deepmeta         Get advanced metadata using yt-dlp`);
   }
 }
