@@ -15,6 +15,6 @@
     "dotenv": "^16.5.0",
     "exceljs": "^4.4.0",
     "puppeteer": "^24.7.2",
-    "youtube-sr": "^4.3.11"
+    "yt-search": "^2.13.1"
   }
 }
