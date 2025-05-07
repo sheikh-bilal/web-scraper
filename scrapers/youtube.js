@@ -5,7 +5,12 @@ import fs from "fs";
 import path from "path";
 import { exec as _exec } from "child_process";
 import { promisify } from "util";
-import { askQuestion, formatDate, getSuggestions } from "../services/utils.js";
+import {
+  askQuestion,
+  formatDate,
+  getSuggestions,
+  autoScrollYoutube,
+} from "../services/utils.js";
 
 const exec = promisify(_exec);
 
@@ -55,30 +60,52 @@ async function searchVideos(keyword) {
 
 // Trending videos scraping
 async function scrapeTrending(countryCode = "US", filterType = "all") {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto(`https://www.youtube.com/feed/trending?gl=${countryCode}`, {
     waitUntil: "networkidle2",
   });
 
+  await autoScrollYoutube(page);
+
   const videoHandles = await page.$$("h3 a");
-  console.log(`Scraping top 10 trending clips in ${countryCode}...\n`);
+  console.log(
+    `Scraping top ${videoHandles.length} trending clips in ${countryCode}...\n`
+  );
 
   const urls = [];
   let collected = 0;
-  const limit = 10;
+  const seen = new Set();
+  const limit = 50;
   for (let i = 0; i < videoHandles.length && collected < limit; i++) {
     const href = await page.evaluate(
       (el) => el.getAttribute("href"),
       videoHandles[i]
     );
-    const url = `https://www.youtube.com${href}`;
+    if (!href) continue;
+
+    let videoId = null;
+    if (href.includes("/watch?v=")) {
+      const match = href.match(/v=([^&]+)/);
+      if (match) videoId = match[1];
+    } else if (href.includes("/shorts/")) {
+      const match = href.match(/\/shorts\/([^/?&]+)/);
+      if (match) videoId = match[1];
+    }
+
+    if (!videoId || seen.has(videoId)) continue;
+
+    seen.add(videoId);
+    const cleanUrl = href.startsWith("http")
+      ? href.split("&")[0]
+      : `https://www.youtube.com${href.split("&")[0]}`;
+
     if (
       filterType === "all" ||
-      (filterType === "shorts" && url.includes("/shorts/")) ||
-      (filterType === "videos" && url.includes("/watch?v="))
+      (filterType === "shorts" && cleanUrl.includes("/shorts/")) ||
+      (filterType === "videos" && cleanUrl.includes("/watch?v="))
     ) {
-      urls.push(url);
+      urls.push(cleanUrl);
       collected++;
     }
   }
@@ -124,6 +151,10 @@ async function scrapeTrending(countryCode = "US", filterType = "all") {
   const filePath = path.join(outputDir, `trending-youtube-${timestamp}.xlsx`);
   await wb.xlsx.writeFile(filePath);
   console.log(`✔  Excel file saved to: ${filePath}`);
+
+  const jsonPath = path.join(outputDir, `trending-youtube-${timestamp}.json`);
+  fs.writeFileSync(jsonPath, JSON.stringify(records, null, 2));
+  console.log(`✔  JSON file saved to: ${jsonPath}`);
 }
 
 // Deep Metadata using yt-dlp
@@ -166,9 +197,7 @@ export async function youtubeScraper() {
 
     case "trending": {
       const country = await askQuestion("Enter country code (e.g. US): ");
-      const type = await askQuestion(
-        "🎞️ Select type (videos | shorts | all): "
-      );
+      const type = await askQuestion("Select type (videos | shorts | all): ");
       await scrapeTrending((country || "US").toUpperCase(), type.toLowerCase());
       break;
     }

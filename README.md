@@ -71,7 +71,7 @@ Automate business and media data collection from **Google Maps**, **LinkedIn**, 
   - 🔗 Video URL
   - 🖼️ Thumbnail URL
   - 📝 Short Description
-- 📊 Saved to: `output/trending-youtube-<timestamp>.xlsx`
+- 📊 Saved to: `output/trending-youtube-<timestamp>.xlsx`, `output/trending-youtube-<timestamp>.json (data analysis)`
 
 #### 3. **Video Suggestions**
 
@@ -147,7 +147,7 @@ If you choose YouTube, you'll be offered:
 
 ### 🎥 YouTube Scraper
 
-`📄 output/search-youtube-*.xlsx`, `trending-youtube-*.xlsx`
+`📄 output/search-youtube-*.xlsx`, `trending-youtube-*.xlsx`, `trending-youtube-*.json`
 
 | Title | Uploader | Views | Duration | Upload Date | Tags | Categories | URL | Description | Likes | Thumbnail |
 | ----- | -------- | ----- | -------- | ----------- | ---- | ---------- | --- | ----------- | ----- | --------- |

@@ -79,3 +79,30 @@ export async function getSuggestions(query) {
   const suggestions = data[1];
   console.log(suggestions);
 }
+
+export async function autoScrollYoutube(page) {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let totalHeight = 0;
+      let distance = 100;
+      let scrollTries = 0;
+
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        if (totalHeight >= scrollHeight) {
+          scrollTries++;
+        } else {
+          scrollTries = 0;
+        }
+
+        if (scrollTries > 3) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 300);
+    });
+  });
+}
